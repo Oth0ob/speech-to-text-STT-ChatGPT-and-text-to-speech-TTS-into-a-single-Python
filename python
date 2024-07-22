@@ -1,0 +1,48 @@
+import speech_recognition as sr
+import openai
+import pyttsx3
+
+# Initialize the speech recognizer
+r = sr.Recognizer()
+
+# Initialize the text-to-speech engine
+engine = pyttsx3.init()
+
+# Set the OpenAI API key
+openai.api_key = "your_openai_api_key"
+
+def speech_to_text():
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = r.listen(source)
+
+    try:
+        text = r.recognize_google(audio)
+        print(f"You said: {text}")
+        return text
+    except sr.UnknownValueError:
+        print("Sorry, I didn't understand that.")
+        return None
+
+def chatgpt_response(prompt):
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=prompt,
+        max_tokens=2048,
+        n=1,
+        stop=None,
+        temperature=0.7,
+    )
+
+    return response.choices[0].text.strip()
+
+def text_to_speech(text):
+    engine.say(text)
+    engine.runAndWait()
+
+while True:
+    user_input = speech_to_text()
+    if user_input:
+        response = chatgpt_response(user_input)
+        print(f"ChatGPT response: {response}")
+        text_to_speech(response)
